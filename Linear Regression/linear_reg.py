@@ -62,7 +62,7 @@ def normalize(features):
 #       of predictions to be done, and 'n' is the number of features
 #
 #       The dimentions of theta are (n x 1) where 'n' is the number of features
-
+#
 def predict(features, theta):
     return features @ theta
 
@@ -77,19 +77,40 @@ def predict(features, theta):
 #                         notes
 #       labels     (IN) - A numpy array with the actual values to be predicted
 #
+#       lambda_val (IN) - The value of lambda used to do regularization
+#       theta      (IN) - A numpy array with the theta values
+#
+#
 #   RETURNS:
 #       A numpy array representing the prediction for each row of features
 #
 #   NOTES:
+#       If lambda is not provided, no regularization will taken in consideration
+#
 #       The dimentions of predictions are (m x 1) where 'm' is the number of
 #       predictions to be done
 #
 #       The dimentions of labels are (m x 1) where 'm' is the number of
 #       predictions to be done
 #
-def cost(prediction, labels):
+#       The dimentions of theta are (n x 1) where 'n' is the number of features
+#
+def cost(prediction, labels, lambda_val=0, theta=None):
+    # Initialize the regularization value to be zero
+    regularization = 0
+
     m = len(labels)
-    return (1 / (2 * m)) * sum((predictions - labels) ** 2)
+    # If a lambda value was provided we will calcuate the regularization
+    if lambda_val and theta is not None:
+        # To perform the operation we will transpose theta
+        transposed_theta = np.transpose(theta)
+        # Get rid of the theta values for the first features (x0)
+        transposed_theta = transposed_theta[1:]
+        # Calculate the regularization
+        regularization = sum(transposed_theta ** 2)
+
+    return (1 / (2 * m)) * (float(sum((predictions - labels) ** 2)) + \
+                            regularization)
 
 # ----------------------------- gradient_descent ---------------------------- #
 #
@@ -105,6 +126,7 @@ def cost(prediction, labels):
 #       theta       (IN) - A numpy array with the theta values of to be
 #                          fitted
 #       alpha       (IN) - An integer representing the learning rate
+#       lambda_val  (IN) - The value of lambda used to do regularization
 #
 #   RETURNS:
 #       The adapted theta values
@@ -120,15 +142,21 @@ def cost(prediction, labels):
 #
 # ----------------------------- gradient_descend ---------------------------- #
 #
-def gradient_descend(features, labels, theta, alpha=0.03):
+def gradient_descend(features, labels, theta, alpha=0.03, lambda_val=0):
+    # Initialize the regularization value
+    regularization = 1
+
     m = len(labels)
     hypothesis = predict(features, theta)
     # The gradient is the derivative of the cost function,
     # this is an (n x m) @ (m x 1) operation, which will give
     # an (n x 1) matrix, see notes.
     gradient =  np.transpose(features) @ (hypothesis - labels)
+    # Check if we will do regularization
+    if lambda_val:
+        regularization = (1 - (alpha * lambda_val) / m)
     # Use the gradient to update the values of theta
-    theta =  theta - (alpha/m) * gradient
+    theta =  (theta * regularization) - (alpha/m) * gradient
     return theta
 
 
@@ -146,6 +174,9 @@ theta = np.array([[random.random()], [random.random()]])
 # Set a learning rate
 alpha = 0.1
 
+# Define a value of lambda (to do regularization and avoid overfitting)
+lambda_val = 0.1
+
 # Normalize the data
 features, median, std_deviation = normalize(features)
 costs_array = []
@@ -156,11 +187,11 @@ for iter in range(iterations):
     # Print the actual value of theta before gradient descent
     print(f"Theta is {theta}")
     # Reduce the error
-    theta = gradient_descend(features, labels, theta, alpha)
+    theta = gradient_descend(features, labels, theta, alpha, lambda_val)
     # Calculate the hypothesis with the new values of theta
     predictions = predict(features, theta)
     # See the cost (error) that we get with these new values of theta
-    calculated_cost = int(cost(predictions, labels))
+    calculated_cost = int(cost(predictions, labels, lambda_val, theta))
     # Store the cost so that we can plot the cost function after we are done
     # with the iterations
     costs_array.append(calculated_cost)
