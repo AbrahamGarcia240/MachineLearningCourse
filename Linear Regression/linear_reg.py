@@ -107,7 +107,7 @@ def cost(prediction, labels, lambda_val=0, theta=None):
         # Get rid of the theta values for the first features (x0)
         transposed_theta = transposed_theta[1:]
         # Calculate the regularization
-        regularization = sum(transposed_theta ** 2)
+        regularization = lambda_val * sum(transposed_theta ** 2)
 
     return (1 / (2 * m)) * (float(sum((predictions - labels) ** 2)) + \
                             regularization)
