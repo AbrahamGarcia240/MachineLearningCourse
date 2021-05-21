@@ -125,14 +125,14 @@ def predict(features, layer_weights):
             # features for the first layer)
             #
             # neuron_output should therefore be (m x 1) where 'm' is the number
-            # of predictions to be made
+            # of predictions to made
             neuron_output = sigmoid(layer_input @ layer_weight[neuron_idx])
             # Add the output of this neuron into layer_output.
             # Each new neuron_output will be a new column in the layer_output
             # matrix
             #
             # layer_output is (m x N) where 'm' is the number of predictions
-            # and 'n' is the number of neurons we have. Eventually layer_output
+            # and 'N' is the number of neurons we have. Eventually layer_output
             # will become the layer_input
             if not layer_output.any():
                 layer_output = neuron_output
@@ -144,7 +144,8 @@ def predict(features, layer_weights):
 
     # If control reached this point we have passed through all the layers and
     # we should have an output of (m x c) where 'm' is the number of predictions
-    # to be made and 'c' is the number of classes
+    # to be made and 'c' is the number of classes. Keep in mind that the last
+    # layer of the NN should have 'c' neurons.
     neural_network_output = layer_output
     # We want the output of this function to be the predicted values in the
     # shape (m x 1) where 'm' is the number of predictions to be done;
